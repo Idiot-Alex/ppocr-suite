@@ -73,6 +73,7 @@ OCR_LANG=ch
 OCR_MODEL_SIZE=tiny
 OCR_USE_GPU=false
 OCR_PRELOAD_ON_STARTUP=true
+OCR_INCLUDE_RAW_BY_DEFAULT=false
 MAX_UPLOAD_SIZE_MB=10
 API_KEY=change-me
 ```
@@ -80,6 +81,16 @@ API_KEY=change-me
 如果 `API_KEY` 为空字符串，则关闭 API Key 鉴权。
 
 默认 `OCR_PRELOAD_ON_STARTUP=true`，服务启动时会初始化 PaddleOCR 并下载/加载模型。这样启动完成后第一个 OCR 请求可以直接使用。开发调试时如果只想跑健康检查或避免启动下载模型，可以设为 `false`，此时会在第一次 OCR 请求时加载。
+
+默认 `OCR_INCLUDE_RAW_BY_DEFAULT=false`。PaddleOCR/PaddleX 的原始结果可能包含原图数组或中间图像数据，直接返回会生成非常大的 JSON，Bruno、Postman 或浏览器可能占用大量内存。正常调用建议只看 `texts` 和 `results`。确实需要排查原始 OCR 字段时，可以请求：
+
+```bash
+curl -X POST "http://127.0.0.1:8000/api/ocr?include_raw=true" \
+  -H "x-api-key: change-me" \
+  -F "file=@test.png"
+```
+
+即使 `include_raw=true`，接口也只返回识别相关字段的精简 raw，不会返回原图数组。
 
 ## 生产启动
 

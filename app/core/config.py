@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     ocr_model_size: str = "tiny"
     ocr_use_gpu: bool = False
     ocr_preload_on_startup: bool = True
+    ocr_include_raw_by_default: bool = False
 
     max_upload_size_mb: int = 10
     api_key: str = "change-me"

@@ -11,5 +11,6 @@ services:
       OCR_MODEL_SIZE: tiny
       OCR_USE_GPU: "false"
       OCR_PRELOAD_ON_STARTUP: "true"
+      OCR_INCLUDE_RAW_BY_DEFAULT: "false"
       MAX_UPLOAD_SIZE_MB: 10
     restart: unless-stopped
