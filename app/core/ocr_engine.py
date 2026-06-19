@@ -10,12 +10,7 @@ logger = logging.getLogger(__name__)
 class OCREngine:
     def __init__(self) -> None:
         logger.info("Initializing PaddleOCR engine...")
-        logger.info(
-            "OCR lang=%s, model_size=%s, use_gpu=%s",
-            settings.ocr_lang,
-            settings.ocr_model_size,
-            settings.ocr_use_gpu,
-        )
+        logger.info("OCR lang=%s", settings.ocr_lang)
 
         try:
             from paddleocr import PaddleOCR
@@ -24,8 +19,6 @@ class OCREngine:
                 "PaddleOCR is not installed. Run `uv sync` or install project dependencies."
             ) from exc
 
-        # PaddleOCR 3.x options vary by version. Keep the minimum stable config;
-        # OCR_MODEL_SIZE is reserved for later model_name/model_dir expansion.
         self.ocr = PaddleOCR(lang=settings.ocr_lang)
 
     def predict(self, image_path: str) -> Any:

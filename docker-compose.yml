@@ -6,10 +6,8 @@ services:
       - "8000:8000"
     environment:
       APP_ENV: prod
-      API_KEY: change-me
+      API_KEYS: ppocr-dev-7c9f2b8a6e1d4c30
       OCR_LANG: ch
-      OCR_MODEL_SIZE: tiny
-      OCR_USE_GPU: "false"
       OCR_PRELOAD_ON_STARTUP: "true"
       OCR_INCLUDE_RAW_BY_DEFAULT: "false"
       MAX_UPLOAD_SIZE_MB: 10

@@ -56,7 +56,7 @@ OCR 请求：
 
 ```bash
 curl -X POST "http://127.0.0.1:8000/api/ocr" \
-  -H "x-api-key: change-me" \
+  -H "x-api-key: ppocr-dev-7c9f2b8a6e1d4c30" \
   -F "file=@test.png"
 ```
 
@@ -70,15 +70,19 @@ APP_ENV=dev
 APP_HOST=0.0.0.0
 APP_PORT=8000
 OCR_LANG=ch
-OCR_MODEL_SIZE=tiny
-OCR_USE_GPU=false
 OCR_PRELOAD_ON_STARTUP=true
 OCR_INCLUDE_RAW_BY_DEFAULT=false
 MAX_UPLOAD_SIZE_MB=10
-API_KEY=change-me
+API_KEYS=ppocr-dev-7c9f2b8a6e1d4c30
 ```
 
-如果 `API_KEY` 为空字符串，则关闭 API Key 鉴权。
+多个 API Key 用英文逗号分隔：
+
+```env
+API_KEYS=key-for-app-a,key-for-app-b,key-for-admin
+```
+
+如果 `API_KEYS` 为空字符串，则关闭 API Key 鉴权。旧的 `API_KEY` 环境变量仍兼容单 key 配置，但新部署建议使用 `API_KEYS`。
 
 默认 `OCR_PRELOAD_ON_STARTUP=true`，服务启动时会初始化 PaddleOCR 并下载/加载模型。这样启动完成后第一个 OCR 请求可以直接使用。开发调试时如果只想跑健康检查或避免启动下载模型，可以设为 `false`，此时会在第一次 OCR 请求时加载。
 
@@ -86,7 +90,7 @@ API_KEY=change-me
 
 ```bash
 curl -X POST "http://127.0.0.1:8000/api/ocr?include_raw=true" \
-  -H "x-api-key: change-me" \
+  -H "x-api-key: ppocr-dev-7c9f2b8a6e1d4c30" \
   -F "file=@test.png"
 ```
 
