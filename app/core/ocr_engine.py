@@ -19,7 +19,12 @@ class OCREngine:
                 "PaddleOCR is not installed. Run `uv sync` or install project dependencies."
             ) from exc
 
-        self.ocr = PaddleOCR(lang=settings.ocr_lang)
+        self.ocr = PaddleOCR(
+            lang=settings.ocr_lang,
+            use_doc_orientation_classify=False,
+            use_doc_unwarping=False,
+            use_textline_orientation=False,
+        )
 
     def predict(self, image_path: str) -> Any:
         return self.ocr.predict(image_path)

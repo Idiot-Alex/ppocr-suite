@@ -6,6 +6,7 @@ from app.schemas.ocr import OCRItem
 RAW_FIELD_ALLOWLIST = {
     "rec_texts",
     "rec_scores",
+    "rec_polys",
     "rec_boxes",
     "dt_polys",
     "boxes",
@@ -41,13 +42,29 @@ def _first_present(raw_item: dict[str, Any], keys: tuple[str, ...]) -> Any:
     return None
 
 
+def _first_bbox_list(raw_item: dict[str, Any], text_count: int) -> list[Any] | None:
+    fallback: list[Any] | None = None
+
+    for key in ("rec_polys", "rec_boxes", "dt_polys", "boxes", "det_boxes"):
+        boxes = _as_list(raw_item.get(key))
+        if not boxes:
+            continue
+        if len(boxes) >= text_count:
+            return boxes
+        if fallback is None:
+            fallback = boxes
+
+    return fallback
+
+
 def _items_from_dict(raw_item: dict[str, Any]) -> list[OCRItem]:
     rec_texts = _as_list(raw_item.get("rec_texts"))
     rec_scores = _as_list(_first_present(raw_item, ("rec_scores", "scores")))
-    rec_boxes = _as_list(_first_present(raw_item, ("rec_boxes", "dt_polys", "boxes", "det_boxes")))
 
     if rec_texts is None:
         return []
+
+    rec_boxes = _first_bbox_list(raw_item, len(rec_texts))
 
     items: list[OCRItem] = []
     for index, text in enumerate(rec_texts):

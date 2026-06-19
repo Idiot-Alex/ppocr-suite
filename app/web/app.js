@@ -80,19 +80,19 @@ function getImageRectInWrap() {
   };
 }
 
-function normalizeBox(bbox) {
+function normalizePolygon(bbox) {
   if (!Array.isArray(bbox) || bbox.length === 0) {
     return null;
   }
 
   if (bbox.length === 4 && bbox.every((value) => typeof value === "number")) {
     const [x1, y1, x2, y2] = bbox;
-    return {
-      x: Math.min(x1, x2),
-      y: Math.min(y1, y2),
-      width: Math.abs(x2 - x1),
-      height: Math.abs(y2 - y1),
-    };
+    return [
+      { x: Math.min(x1, x2), y: Math.min(y1, y2) },
+      { x: Math.max(x1, x2), y: Math.min(y1, y2) },
+      { x: Math.max(x1, x2), y: Math.max(y1, y2) },
+      { x: Math.min(x1, x2), y: Math.max(y1, y2) },
+    ];
   }
 
   const points = bbox
@@ -104,15 +104,34 @@ function normalizeBox(bbox) {
     return null;
   }
 
+  return points;
+}
+
+function getPolygonBounds(points) {
   const xs = points.map((point) => point.x);
   const ys = points.map((point) => point.y);
   const minX = Math.min(...xs);
   const minY = Math.min(...ys);
   return {
-    x: minX,
-    y: minY,
-    width: Math.max(...xs) - minX,
-    height: Math.max(...ys) - minY,
+    minX,
+    minY,
+    maxX: Math.max(...xs),
+    maxY: Math.max(...ys),
+  };
+}
+
+function getBoxFromBbox(bbox) {
+  const points = normalizePolygon(bbox);
+  if (!points || points.length === 0) {
+    return null;
+  }
+
+  const bounds = getPolygonBounds(points);
+  return {
+    x: bounds.minX,
+    y: bounds.minY,
+    width: bounds.maxX - bounds.minX,
+    height: bounds.maxY - bounds.minY,
   };
 }
 
@@ -133,7 +152,7 @@ function renderOverlay() {
   const scaleY = imageRect.height / previewImage.naturalHeight;
 
   latestResults.forEach((item, index) => {
-    const box = normalizeBox(item.bbox);
+    const box = getBoxFromBbox(item.bbox);
     if (!box || box.width <= 0 || box.height <= 0) {
       return;
     }
@@ -153,8 +172,9 @@ function renderOverlay() {
 function renderResults(payload) {
   latestResults = Array.isArray(payload.results) ? payload.results : [];
   const texts = Array.isArray(payload.texts) ? payload.texts : [];
+  const positionedCount = latestResults.filter((item) => getBoxFromBbox(item.bbox)).length;
 
-  resultMeta.textContent = `${latestResults.length} positioned items, ${texts.length} text lines`;
+  resultMeta.textContent = `${positionedCount}/${latestResults.length} positioned, ${texts.length} text lines`;
   fullText.textContent = texts.join("\n");
   textSummary.hidden = texts.length === 0;
   resultList.innerHTML = "";
@@ -170,7 +190,8 @@ function renderResults(payload) {
     const data = document.createElement("div");
     data.className = "result-data";
     const score = typeof item.score === "number" ? item.score.toFixed(4) : "-";
-    data.innerHTML = `<span>score: ${score}</span><span>bbox: ${JSON.stringify(item.bbox ?? null)}</span>`;
+    const hasPosition = getBoxFromBbox(item.bbox) ? "yes" : "no";
+    data.innerHTML = `<span>score: ${score}</span><span>position: ${hasPosition}</span><span>bbox: ${JSON.stringify(item.bbox ?? null)}</span>`;
 
     li.append(text, data);
     resultList.appendChild(li);
