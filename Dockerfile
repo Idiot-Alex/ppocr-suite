@@ -4,6 +4,7 @@ WORKDIR /app
 
 ENV PYTHONUNBUFFERED=1
 ENV UV_SYSTEM_PYTHON=1
+ENV PATH="/app/.venv/bin:$PATH"
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libgomp1 \
@@ -16,14 +17,7 @@ RUN pip install --no-cache-dir uv
 
 COPY pyproject.toml uv.lock* ./
 
-RUN uv pip install --system \
-    paddlepaddle \
-    paddleocr \
-    fastapi \
-    uvicorn \
-    python-multipart \
-    pydantic-settings \
-    pillow
+RUN uv sync --locked --no-dev --no-install-project
 
 COPY . .
 

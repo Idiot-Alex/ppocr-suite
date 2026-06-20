@@ -2,6 +2,7 @@ import logging
 import time
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+from starlette.concurrency import run_in_threadpool
 
 from app.api.deps import verify_api_key
 from app.core.config import settings
@@ -30,7 +31,7 @@ async def ocr_image(
             include_raw,
         )
         tmp_path = await save_upload_file(file)
-        raw, texts, results = run_ocr(tmp_path, include_raw=include_raw)
+        raw, texts, results = await run_in_threadpool(run_ocr, tmp_path, include_raw)
         elapsed_ms = (time.perf_counter() - started_at) * 1000
         logger.info(
             "ocr.done filename=%s texts=%s results=%s elapsed_ms=%.2f",

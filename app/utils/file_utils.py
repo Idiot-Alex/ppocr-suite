@@ -2,6 +2,7 @@ import os
 import tempfile
 
 from fastapi import UploadFile
+from PIL import Image, UnidentifiedImageError
 
 from app.core.config import settings
 
@@ -17,6 +18,14 @@ def validate_filename(filename: str) -> str:
         raise ValueError(f"Unsupported file type: {suffix}")
 
     return suffix
+
+
+def validate_image_file(path: str) -> None:
+    try:
+        with Image.open(path) as image:
+            image.verify()
+    except (OSError, UnidentifiedImageError) as exc:
+        raise ValueError("Uploaded file is not a valid image") from exc
 
 
 async def save_upload_file(file: UploadFile) -> str:
@@ -35,6 +44,7 @@ async def save_upload_file(file: UploadFile) -> str:
                 raise ValueError(f"File too large. Max size is {settings.max_upload_size_mb}MB")
             tmp.write(chunk)
 
+    validate_image_file(tmp_path)
     return tmp_path
 
 

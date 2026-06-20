@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     ocr_lang: str = "ch"
     ocr_preload_on_startup: bool = True
     ocr_include_raw_by_default: bool = False
+    ocr_max_concurrency: int = 1
 
     max_upload_size_mb: int = 10
     api_keys: str = "ppocr-dev-7c9f2b8a6e1d4c30"

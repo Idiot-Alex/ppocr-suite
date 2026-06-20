@@ -1,5 +1,7 @@
+from threading import BoundedSemaphore
 from typing import Any
 
+from app.core.config import settings
 from app.core.ocr_engine import get_ocr_engine
 from app.schemas.ocr import OCRItem
 
@@ -13,6 +15,8 @@ RAW_FIELD_ALLOWLIST = {
     "scores",
     "det_boxes",
 }
+
+_ocr_semaphore = BoundedSemaphore(max(1, settings.ocr_max_concurrency))
 
 
 def _to_plain(value: Any) -> Any:
@@ -128,7 +132,8 @@ def compact_raw_result(raw_result: Any) -> Any:
 
 
 def run_ocr(image_path: str, include_raw: bool = False) -> tuple[Any, list[str], list[OCRItem]]:
-    raw = get_ocr_engine().predict(image_path)
+    with _ocr_semaphore:
+        raw = get_ocr_engine().predict(image_path)
     items = extract_items(raw)
     texts = [item.text for item in items]
     compact_raw = compact_raw_result(raw) if include_raw else None

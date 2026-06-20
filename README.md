@@ -72,6 +72,7 @@ APP_PORT=8000
 OCR_LANG=ch
 OCR_PRELOAD_ON_STARTUP=true
 OCR_INCLUDE_RAW_BY_DEFAULT=false
+OCR_MAX_CONCURRENCY=1
 MAX_UPLOAD_SIZE_MB=10
 API_KEYS=ppocr-dev-7c9f2b8a6e1d4c30
 ```
@@ -85,6 +86,8 @@ API_KEYS=key-for-app-a,key-for-app-b,key-for-admin
 如果 `API_KEYS` 为空字符串，则关闭 API Key 鉴权。旧的 `API_KEY` 环境变量仍兼容单 key 配置，但新部署建议使用 `API_KEYS`。
 
 默认 `OCR_PRELOAD_ON_STARTUP=true`，服务启动时会初始化 PaddleOCR 并下载/加载模型。这样启动完成后第一个 OCR 请求可以直接使用。开发调试时如果只想跑健康检查或避免启动下载模型，可以设为 `false`，此时会在第一次 OCR 请求时加载。
+
+默认 `OCR_MAX_CONCURRENCY=1`，同一进程内一次只执行一个 OCR 推理，避免低内存机器在并发请求下同时跑多个 PaddleOCR 任务。机器资源更充足时可以适当调高。
 
 默认 `OCR_INCLUDE_RAW_BY_DEFAULT=false`。PaddleOCR/PaddleX 的原始结果可能包含原图数组或中间图像数据，直接返回会生成非常大的 JSON，Bruno、Postman 或浏览器可能占用大量内存。正常调用建议只看 `texts` 和 `results`。确实需要排查原始 OCR 字段时，可以请求：
 
