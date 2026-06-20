@@ -1,6 +1,6 @@
 # PP-OCR Web
 
-Browser-side OCR app for PP-OCRv6 ONNX models.
+Browser-side OCR app for PP-OCRv6 tiny ONNX models.
 
 ## Intended Stack
 
@@ -34,7 +34,7 @@ For local Workers preview:
 npm run cf:dev
 ```
 
-## Planned Flow
+## OCR Flow
 
 ```text
 image file
@@ -47,4 +47,29 @@ image file
  -> render text and boxes
 ```
 
-Models should live outside git and be deployed as static assets or R2-backed assets.
+The app loads PP-OCRv6 tiny detection and recognition ONNX models in a Web Worker with
+`onnxruntime-web`. Model URLs are centralized in `src/ocr/modelConfig.ts`.
+
+Download the model assets:
+
+```bash
+./scripts/download_models.sh
+```
+
+Default local asset paths:
+
+- `public/models/pp-ocrv6-tiny-det.onnx`
+- `public/models/pp-ocrv6-tiny-rec.onnx`
+- `public/models/pp-ocrv6-tiny-rec.yml`
+
+The script defaults to `https://hf-mirror.com`. To use Hugging Face directly:
+
+```bash
+HF_BASE=https://huggingface.co ./scripts/download_models.sh
+```
+
+Keep `.onnx` model files outside git and deploy them as static assets or R2-backed assets.
+
+The first implementation uses DB-style thresholding and connected components for text region
+extraction, then CTC decoding for recognition. Rotated polygon boxes can be added later without
+changing the UI or Worker protocol.
