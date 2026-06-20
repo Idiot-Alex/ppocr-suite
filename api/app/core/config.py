@@ -10,11 +10,18 @@ class Settings(BaseSettings):
     app_port: int = 8000
 
     ocr_lang: str = "ch"
+    ocr_engine: str = ""
+    ocr_det_model: str = ""
+    ocr_rec_model: str = ""
+    ocr_det_model_dir: str = ""
+    ocr_rec_model_dir: str = ""
     ocr_preload_on_startup: bool = True
     ocr_include_raw_by_default: bool = False
     ocr_max_concurrency: int = 1
 
     max_upload_size_mb: int = 10
+    max_image_pixels: int = 16_000_000
+    rate_limit_per_minute: int = 60
     api_keys: str = "ppocr-dev-7c9f2b8a6e1d4c30"
     api_key: str = ""
 

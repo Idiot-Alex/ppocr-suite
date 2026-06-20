@@ -1,13 +1,16 @@
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from pathlib import Path
+from typing import Any
 
-from fastapi import FastAPI
-from fastapi.responses import FileResponse
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.api.ocr import router as ocr_router
 from app.core.config import settings
+from app.core.errors import error_detail
 from app.core.logging import setup_logging
 from app.core.ocr_engine import get_ocr_engine
 from app.core.request_logging import RequestLoggingMiddleware
@@ -31,6 +34,27 @@ app = FastAPI(
 )
 app.add_middleware(RequestLoggingMiddleware)
 app.mount("/static", StaticFiles(directory=WEB_DIR), name="static")
+
+
+@app.exception_handler(HTTPException)
+async def http_exception_handler(_: Request, exc: HTTPException) -> JSONResponse:
+    if isinstance(exc.detail, dict) and "error" in exc.detail:
+        content: dict[str, Any] = exc.detail
+    else:
+        content = error_detail("http_error", str(exc.detail))
+    return JSONResponse(status_code=exc.status_code, content=content, headers=exc.headers)
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(_: Request, exc: RequestValidationError) -> JSONResponse:
+    return JSONResponse(
+        status_code=422,
+        content=error_detail(
+            "validation_error",
+            "Request validation failed",
+            details=exc.errors(),
+        ),
+    )
 
 
 @app.get("/health")

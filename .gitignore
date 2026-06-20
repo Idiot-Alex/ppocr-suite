@@ -19,3 +19,9 @@ wheels/
 # Runtime data
 uploads/
 models/
+
+# Frontend / Cloudflare
+node_modules/
+dist/
+.wrangler/
+.dev.vars

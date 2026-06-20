@@ -3,6 +3,7 @@ import secrets
 from fastapi import Header, HTTPException
 
 from app.core.config import settings
+from app.core.errors import error_detail
 
 
 def verify_api_key(x_api_key: str | None = Header(default=None)) -> None:
@@ -13,4 +14,7 @@ def verify_api_key(x_api_key: str | None = Header(default=None)) -> None:
     if x_api_key is None or not any(
         secrets.compare_digest(x_api_key, api_key) for api_key in valid_api_keys
     ):
-        raise HTTPException(status_code=401, detail="Invalid API key")
+        raise HTTPException(
+            status_code=401,
+            detail=error_detail("unauthorized", "Invalid API key"),
+        )

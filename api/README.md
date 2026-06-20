@@ -87,6 +87,38 @@ curl -X POST "http://127.0.0.1:8000/api/ocr/base64" \
   -d '{"filename":"test.png","image_base64":"<base64-image-data>"}'
 ```
 
+成功响应会包含完整文本、逐行结果和请求元信息：
+
+```json
+{
+  "success": true,
+  "filename": "test.png",
+  "texts": ["hello"],
+  "results": [{"text": "hello", "score": 0.99, "bbox": [0, 0, 100, 32]}],
+  "raw": null,
+  "meta": {
+    "source": "upload",
+    "elapsed_ms": 123.45,
+    "image_width": 800,
+    "image_height": 600,
+    "engine": "paddleocr",
+    "text_count": 1
+  }
+}
+```
+
+错误响应统一为：
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "invalid_image",
+    "message": "Uploaded file is not a valid image"
+  }
+}
+```
+
 ## 配置
 
 主要配置在 `.env`：
@@ -97,10 +129,17 @@ APP_ENV=dev
 APP_HOST=0.0.0.0
 APP_PORT=8000
 OCR_LANG=ch
+OCR_ENGINE=
+OCR_DET_MODEL=
+OCR_REC_MODEL=
+OCR_DET_MODEL_DIR=
+OCR_REC_MODEL_DIR=
 OCR_PRELOAD_ON_STARTUP=true
 OCR_INCLUDE_RAW_BY_DEFAULT=false
 OCR_MAX_CONCURRENCY=1
 MAX_UPLOAD_SIZE_MB=10
+MAX_IMAGE_PIXELS=16000000
+RATE_LIMIT_PER_MINUTE=60
 API_KEYS=ppocr-dev-7c9f2b8a6e1d4c30
 ```
 
@@ -115,6 +154,10 @@ API_KEYS=key-for-app-a,key-for-app-b,key-for-admin
 默认 `OCR_PRELOAD_ON_STARTUP=true`，服务启动时会初始化 PaddleOCR 并下载/加载模型。这样启动完成后第一个 OCR 请求可以直接使用。开发调试时如果只想跑健康检查或避免启动下载模型，可以设为 `false`，此时会在第一次 OCR 请求时加载。
 
 默认 `OCR_MAX_CONCURRENCY=1`，同一进程内一次只执行一个 OCR 推理，避免低内存机器在并发请求下同时跑多个 PaddleOCR 任务。机器资源更充足时可以适当调高。
+
+默认 `OCR_DET_MODEL`、`OCR_REC_MODEL`、`OCR_DET_MODEL_DIR`、`OCR_REC_MODEL_DIR` 都为空，此时使用 PaddleOCR 根据 `OCR_LANG` 选择的默认模型。需要指定 PP-OCRv6 tiny/small/medium 模型时，可以填入对应 detection/recognition 模型名或本地模型目录。`OCR_ENGINE` 为空时使用 PaddleOCR 默认推理后端。
+
+默认 `MAX_IMAGE_PIXELS=16000000`，超过该像素数的图片会被拒绝，避免超大图片耗尽内存。默认 `RATE_LIMIT_PER_MINUTE=60`，按 API key 或客户端 IP 做进程内基础限流；设置为 `0` 可关闭。
 
 默认 `OCR_INCLUDE_RAW_BY_DEFAULT=false`。PaddleOCR/PaddleX 的原始结果可能包含原图数组或中间图像数据，直接返回会生成非常大的 JSON，Bruno、Postman 或浏览器可能占用大量内存。正常调用建议只看 `texts` 和 `results`。确实需要排查原始 OCR 字段时，可以请求：
 
@@ -137,6 +180,8 @@ curl -X POST "http://127.0.0.1:8000/api/ocr?include_raw=true" \
 ```
 
 ## Docker
+
+从仓库根目录执行：
 
 ```bash
 docker compose up -d --build

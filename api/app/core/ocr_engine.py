@@ -11,6 +11,12 @@ class OCREngine:
     def __init__(self) -> None:
         logger.info("Initializing PaddleOCR engine...")
         logger.info("OCR lang=%s", settings.ocr_lang)
+        logger.info(
+            "OCR models det=%s rec=%s engine=%s",
+            settings.ocr_det_model or "-",
+            settings.ocr_rec_model or "-",
+            settings.ocr_engine or "-",
+        )
 
         try:
             from paddleocr import PaddleOCR
@@ -19,12 +25,22 @@ class OCREngine:
                 "PaddleOCR is not installed. Run `uv sync` or install project dependencies."
             ) from exc
 
-        self.ocr = PaddleOCR(
-            lang=settings.ocr_lang,
-            use_doc_orientation_classify=False,
-            use_doc_unwarping=False,
-            use_textline_orientation=False,
-        )
+        options: dict[str, Any] = {
+            "lang": settings.ocr_lang,
+            "use_doc_orientation_classify": False,
+            "use_doc_unwarping": False,
+            "use_textline_orientation": False,
+        }
+        optional_options = {
+            "engine": settings.ocr_engine,
+            "text_detection_model_name": settings.ocr_det_model,
+            "text_recognition_model_name": settings.ocr_rec_model,
+            "text_detection_model_dir": settings.ocr_det_model_dir,
+            "text_recognition_model_dir": settings.ocr_rec_model_dir,
+        }
+        options.update({key: value for key, value in optional_options.items() if value})
+
+        self.ocr = PaddleOCR(**options)
 
     def predict(self, image_path: str) -> Any:
         return self.ocr.predict(image_path)

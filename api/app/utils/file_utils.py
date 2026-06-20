@@ -79,9 +79,19 @@ def _validate_remote_url(image_url: str) -> None:
 def validate_image_file(path: str) -> None:
     try:
         with Image.open(path) as image:
+            width, height = image.size
+            if width * height > settings.max_image_pixels:
+                raise ValueError(
+                    f"Image too large. Max pixels is {settings.max_image_pixels}"
+                )
             image.verify()
     except (OSError, UnidentifiedImageError) as exc:
         raise ValueError("Uploaded file is not a valid image") from exc
+
+
+def get_image_size(path: str) -> tuple[int, int]:
+    with Image.open(path) as image:
+        return image.size
 
 
 def _write_temp_image_from_chunks(chunks: list[bytes], suffix: str) -> str:
