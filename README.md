@@ -6,6 +6,8 @@
 
 - `GET /health` 健康检查
 - `POST /api/ocr` 上传图片 OCR 识别
+- `POST /api/ocr/url` 或 `GET /api/ocr/url?image_url=...` 根据图片链接 OCR 识别
+- `POST /api/ocr/base64` 根据 base64 图片 OCR 识别
 - 返回识别文本、文本框、置信度和 PaddleOCR 原始结果
 - API Key 鉴权
 - 默认 CPU 推理，无需 GPU / CUDA
@@ -60,6 +62,31 @@ curl -X POST "http://127.0.0.1:8000/api/ocr" \
   -F "file=@test.png"
 ```
 
+根据图片 URL 请求：
+
+```bash
+curl -X POST "http://127.0.0.1:8000/api/ocr/url" \
+  -H "x-api-key: ppocr-dev-7c9f2b8a6e1d4c30" \
+  -H "content-type: application/json" \
+  -d '{"image_url":"https://example.com/test.png"}'
+```
+
+或使用 GET：
+
+```bash
+curl "http://127.0.0.1:8000/api/ocr/url?image_url=https://example.com/test.png" \
+  -H "x-api-key: ppocr-dev-7c9f2b8a6e1d4c30"
+```
+
+根据 base64 图片请求：
+
+```bash
+curl -X POST "http://127.0.0.1:8000/api/ocr/base64" \
+  -H "x-api-key: ppocr-dev-7c9f2b8a6e1d4c30" \
+  -H "content-type: application/json" \
+  -d '{"filename":"test.png","image_base64":"<base64-image-data>"}'
+```
+
 ## 配置
 
 主要配置在 `.env`：
@@ -98,6 +125,8 @@ curl -X POST "http://127.0.0.1:8000/api/ocr?include_raw=true" \
 ```
 
 即使 `include_raw=true`，接口也只返回识别相关字段的精简 raw，不会返回原图数组。
+
+图片链接解析会下载远程图片到临时文件，完成 OCR 后自动删除。服务会拒绝解析到本地、内网、保留地址或 link-local 地址的 URL，避免常见 SSRF 风险。上传、URL 下载和 base64 解码都会复用 `MAX_UPLOAD_SIZE_MB` 限制。
 
 ## 生产启动
 
