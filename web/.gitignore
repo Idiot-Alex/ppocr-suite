@@ -1,6 +1,5 @@
 node_modules/
 dist/
 tsconfig.tsbuildinfo
-public/models/*.onnx
 .wrangler/
 .dev.vars
