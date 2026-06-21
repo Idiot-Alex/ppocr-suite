@@ -140,33 +140,45 @@ function App() {
   }
 
   return (
-    <main className="app-shell">
-      <header className="topbar">
+    <main className="min-h-screen bg-[#eef1f4] p-4 text-[#151719] md:p-6">
+      <header className="mx-auto mb-5 flex min-h-24 flex-col items-stretch justify-between gap-5 md:flex-row md:items-center">
         <div>
-          <p className="eyebrow">PP-OCRv6 tiny ONNX</p>
-          <h1>Browser OCR workspace</h1>
+          <p className="mb-2 text-xs font-extrabold tracking-normal text-[#68707a] uppercase">
+            PP-OCRv6 tiny ONNX
+          </p>
+          <h1 className="m-0 text-[clamp(32px,5vw,56px)] leading-[0.95] font-bold">
+            Browser OCR workspace
+          </h1>
         </div>
-        <label className="upload-button">
-          <input type="file" accept="image/*" onChange={onFileChange} />
+        <label className="grid min-h-11 min-w-[148px] cursor-pointer place-items-center border border-[#151719] bg-[#151719] px-[18px] font-extrabold text-white">
+          <input className="hidden" type="file" accept="image/*" onChange={onFileChange} />
           <span>{isRunning ? "Running..." : "Select image"}</span>
         </label>
       </header>
 
-      <section className="workspace" onDragOver={onDragOver} onDrop={onDrop}>
-        <div className="preview-panel">
+      <section
+        className="grid items-stretch gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(320px,420px)]"
+        onDragOver={onDragOver}
+        onDrop={onDrop}
+      >
+        <div className="grid min-h-0 place-items-center overflow-hidden border border-[#d6dbe1] bg-white lg:min-h-[calc(100vh-140px)]">
           {!imageUrl && (
-            <label className="empty-drop">
-              <input type="file" accept="image/*" onChange={onFileChange} />
+            <label className="grid min-h-60 w-[min(520px,calc(100%-40px))] cursor-pointer place-items-center border border-dashed border-[#151719] bg-[#f8fafc] font-extrabold text-[#151719]">
+              <input className="hidden" type="file" accept="image/*" onChange={onFileChange} />
               <span>Drop in an image to run local OCR</span>
             </label>
           )}
 
           {imageUrl && (
-            <div className="image-stage">
-              <img src={imageUrl} alt={fileName || "Selected OCR input"} />
+            <div className="relative max-h-[70vh] max-w-full lg:max-h-[calc(100vh-140px)]">
+              <img
+                className="block max-h-[70vh] max-w-full object-contain lg:max-h-[calc(100vh-140px)]"
+                src={imageUrl}
+                alt={fileName || "Selected OCR input"}
+              />
               {result?.lines.map((line, index) => (
                 <div
-                  className="ocr-box"
+                  className="pointer-events-none absolute border-2 border-[#00a676] bg-[#00a6761f]"
                   key={`${line.box.x}-${line.box.y}-${index}`}
                   style={{
                     left: `${(line.box.x / result.image.width) * 100}%`,
@@ -181,18 +193,27 @@ function App() {
           )}
         </div>
 
-        <aside className="result-panel">
-          <div className="status-row">
+        <aside className="flex min-h-0 flex-col gap-4 overflow-auto border border-[#d6dbe1] bg-white p-[18px] lg:min-h-[calc(100vh-140px)]">
+          <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="label">Status</p>
-              <p className="status-text">{statusText(progress, isRunning, result, error)}</p>
+              <p className="mb-2 text-xs font-extrabold tracking-normal text-[#68707a] uppercase">
+                Status
+              </p>
+              <p className="m-0 text-xl font-extrabold">
+                {statusText(progress, isRunning, result, error)}
+              </p>
             </div>
-            {result && <span className="count">{result.lines.length}</span>}
+            {result && (
+              <span className="grid min-h-10 min-w-10 place-items-center border border-[#151719] font-black">
+                {result.lines.length}
+              </span>
+            )}
           </div>
 
           {progress?.stage === "recognizing" && (
-            <div className="progress-track">
+            <div className="h-2 bg-[#e4e8ed]">
               <span
+                className="block h-full bg-[#00a676] transition-[width] duration-150 ease-in-out"
                 style={{
                   width: `${progress.total ? (progress.completed / progress.total) * 100 : 0}%`,
                 }}
@@ -200,16 +221,30 @@ function App() {
             </div>
           )}
 
-          {error && <pre className="error-box">{error}</pre>}
+          {error && (
+            <pre className="m-0 max-h-[260px] overflow-auto whitespace-pre-wrap border border-red-600 bg-rose-50 p-3 text-red-800">
+              {error}
+            </pre>
+          )}
 
           {logs.length > 0 && (
-            <details className="log-panel" open={Boolean(error) || isRunning}>
-              <summary>Diagnostics</summary>
-              <ol>
+            <details
+              className="border border-[#d6dbe1] bg-[#f8fafc]"
+              open={Boolean(error) || isRunning}
+            >
+              <summary className="cursor-pointer px-3 py-2.5 font-black text-[#151719]">
+                Diagnostics
+              </summary>
+              <ol className="m-0 max-h-[260px] list-none overflow-auto px-3 pb-3">
                 {logs.map((item, index) => (
-                  <li key={`${item.time}-${index}`}>
-                    <span>{item.time}</span>
-                    <p>{item.message}</p>
+                  <li
+                    className="grid grid-cols-[84px_minmax(0,1fr)] gap-2.5 border-t border-[#e4e8ed] py-[7px]"
+                    key={`${item.time}-${index}`}
+                  >
+                    <span className="text-xs text-[#68707a] tabular-nums">{item.time}</span>
+                    <p className="m-0 [overflow-wrap:anywhere] text-xs leading-[1.4] text-[#2f363d]">
+                      {item.message}
+                    </p>
                   </li>
                 ))}
               </ol>
@@ -218,35 +253,54 @@ function App() {
 
           {result && (
             <>
-              <div className="meta-grid">
-                <div>
-                  <span>Image</span>
-                  <strong>
+              <div className="grid grid-cols-2 border border-[#d6dbe1]">
+                <div className="grid gap-1.5 p-3">
+                  <span className="text-xs font-extrabold text-[#68707a] uppercase">Image</span>
+                  <strong className="text-[15px]">
                     {result.image.width} x {result.image.height}
                   </strong>
                 </div>
-                <div>
-                  <span>Elapsed</span>
-                  <strong>{result.elapsedMs} ms</strong>
+                <div className="grid gap-1.5 border-l border-[#d6dbe1] p-3">
+                  <span className="text-xs font-extrabold text-[#68707a] uppercase">Elapsed</span>
+                  <strong className="text-[15px]">{result.elapsedMs} ms</strong>
                 </div>
               </div>
 
-              <div className="actions">
-                <button type="button" onClick={copyText} disabled={!text}>
+              <div className="grid grid-cols-[1fr_92px] gap-2.5">
+                <button
+                  className="min-h-10 cursor-pointer border border-[#151719] bg-[#151719] font-extrabold text-white disabled:cursor-not-allowed disabled:opacity-45"
+                  type="button"
+                  onClick={copyText}
+                  disabled={!text}
+                >
                   Copy text
                 </button>
-                <button type="button" onClick={downloadJson}>
+                <button
+                  className="min-h-10 cursor-pointer border border-[#151719] bg-[#151719] font-extrabold text-white"
+                  type="button"
+                  onClick={downloadJson}
+                >
                   JSON
                 </button>
               </div>
 
-              <textarea value={text} readOnly aria-label="Recognized text" />
+              <textarea
+                className="min-h-[180px] resize-y border border-[#d6dbe1] p-3 leading-normal text-[#151719]"
+                value={text}
+                readOnly
+                aria-label="Recognized text"
+              />
 
-              <div className="line-list">
+              <div className="grid gap-2">
                 {result.lines.map((line, index) => (
-                  <article key={`${line.text}-${index}`} className="line-item">
-                    <p>{line.text}</p>
-                    <span>{Math.round(line.score * 100)}%</span>
+                  <article
+                    key={`${line.text}-${index}`}
+                    className="grid grid-cols-[minmax(0,1fr)_48px] gap-3 border-t border-[#e4e8ed] py-2.5"
+                  >
+                    <p className="m-0 break-words">{line.text}</p>
+                    <span className="text-right text-[13px] font-extrabold text-[#68707a]">
+                      {Math.round(line.score * 100)}%
+                    </span>
                   </article>
                 ))}
               </div>

@@ -6,6 +6,7 @@ Browser-side OCR app for PP-OCRv6 tiny ONNX models.
 
 - Vite
 - React
+- Tailwind CSS
 - TanStack Router
 - TanStack Query
 - onnxruntime-web
