@@ -68,6 +68,12 @@ async def _run_ocr_from_temp_file(
         )
 
     except Exception as exc:
+        logger.exception(
+            "ocr.error source=%s filename=%s elapsed_ms=%.2f",
+            source,
+            filename,
+            (time.perf_counter() - started_at) * 1000,
+        )
         raise_api_error(500, "ocr_failed", f"OCR failed: {exc}")
 
     finally:

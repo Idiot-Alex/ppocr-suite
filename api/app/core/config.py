@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     ocr_rec_model: str = ""
     ocr_det_model_dir: str = ""
     ocr_rec_model_dir: str = ""
+    ocr_enable_mkldnn: bool = False
     ocr_preload_on_startup: bool = True
     ocr_include_raw_by_default: bool = False
     ocr_max_concurrency: int = 1

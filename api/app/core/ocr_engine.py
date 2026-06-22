@@ -30,6 +30,7 @@ class OCREngine:
             "use_doc_orientation_classify": False,
             "use_doc_unwarping": False,
             "use_textline_orientation": False,
+            "enable_mkldnn": settings.ocr_enable_mkldnn,
         }
         optional_options = {
             "engine": settings.ocr_engine,
